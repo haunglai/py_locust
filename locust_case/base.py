@@ -14,6 +14,10 @@ class Base(HttpUser):
         Path.mkdir(data_path)
     headers = {'Contest-type': 'application/json'}
     def on_stop(self):
+        """
+        后置步骤：保存写入生成的数据
+        :return:
+        """
         if self.data.qsize()>0:
             path_csv=self.data_path/Path(f"{self.case_name}.csv")
             data_len=self.data.qsize()
