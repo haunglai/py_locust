@@ -8,7 +8,7 @@ print(project)
 sys.path.append(project)
 sys.path.append(root_path)
 from locust_case.base import Base
-from tools.commom_function import datatime_numa,run_case,read_csv_to_queue,queue_get_and_put
+from tools.commom_function import datatime_numa,run_case,read_csv_to_queue,queue_get_and_put,limit_run_times
 class case(Base):
     # wait_time = between(0.1,1)
     case_name=(os.path.basename(__file__))[:-3]
@@ -24,8 +24,8 @@ class case(Base):
         }
     @task
     def locust_run(self):
-
-        self.data.put_nowait(self.locust_runcase()['result'][0]['spaceid'])
+        if limit_run_times(self.case_name, self.data):
+            self.data.put_nowait(self.locust_runcase()['result'][0]['spaceid'])
 
         # print(person.text)
 if __name__=='__main__':

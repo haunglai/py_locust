@@ -31,7 +31,7 @@ class case(Base):
     @task
     def locust_run(self):
 
-        self.data.put_nowait(self.locust_runcase()['result'][0]['spaceid'])
+        self.data.put_nowait(self.locust_runcase['result'][0]['spaceid'])
 
         # print(person.text)
 if __name__=='__main__':

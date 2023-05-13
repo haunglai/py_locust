@@ -20,8 +20,11 @@ sys.path.append(project)
 sys.path.append(root_path)
 source="sqlite3"
 # source="mysql"
+wait_time=0.5
 def db_source():
+    time.sleep(wait_time)
     global sql_str
+
     if source=='sqlite3' :
         import sqlite3
         sql_str='?'
@@ -37,7 +40,8 @@ def add_space_mysql(data):
     # con=sqlite3.connect(Path(os.path.abspath(__file__)).parent.parent/Path("db.sqlite3"))
     con=db_source()
     cur=con.cursor()
-    sql=f"insert into space(spaceid,level,spacename,parentid,code)values({sql_str},{sql_str},{sql_str},{sql_str},{sql_str})"
+    sql_value=','.join([sql_str for i in range(len(data))])
+    sql=f"insert into space(spaceid,level,spacename,parentid,code)values({sql_value})"
     # sql=f"insert into defspace(spaceid,level,spacename,parentid)value({spaceid},{level},{spacename},{parentid})"
     cur.execute(sql,data)
     con.commit()
@@ -48,7 +52,8 @@ def add_organization_mysql(data):
     # con=sqlite3.connect(Path(os.path.abspath(__file__)).parent.parent/Path("db.sqlite3"))
     con=db_source()
     cur=con.cursor()
-    sql=f"insert into organization(spaceid,organizationid)values({sql_str},{sql_str})"
+    sql_value = ','.join([sql_str for i in range(len(data))])
+    sql=f"insert into organization(spaceid,organizationid)values({sql_value})"
     # sql=f"insert into defspace(spaceid,level,spacename,parentid)value({spaceid},{level},{spacename},{parentid})"
     cur.execute(sql,data)
     con.commit()
@@ -59,7 +64,8 @@ def add_operator_mysql(data):
     # con=sqlite3.connect(Path(os.path.abspath(__file__)).parent.parent/Path("db.sqlite3"))
     con=db_source()
     cur=con.cursor()
-    sql=f"insert into operator(operatorid,organizationid)values({sql_str},{sql_str})"
+    sql_value = ','.join([sql_str for i in range(len(data))])
+    sql=f"insert into operator(operatorid,organizationid)values({sql_value})"
     # sql=f"insert into defspace(spaceid,level,spacename,parentid)value({spaceid},{level},{spacename},{parentid})"
     cur.execute(sql,data)
     con.commit()
@@ -89,9 +95,9 @@ def addspace():
     spacename=body['spacename']
     parentid=body["spacename"]
     spaceid=get_zimu()
-    time.sleep(0.3)
+
     add_space_mysql((spaceid,level,spacename,parentid,code))
-    time.sleep(0.1)
+
     return json.dumps({"recode":0,"result":[{"spaceid":spaceid}]})
 @app.route('/service/organization/0.1.0/add',methods=['POST'])
 def addorganization():
@@ -99,9 +105,9 @@ def addorganization():
     spaceid=body['spaceid']
 
     organizationid=get_zimu()
-    time.sleep(0.3)
+
     add_organization_mysql((spaceid,organizationid))
-    time.sleep(0.1)
+
     return json.dumps({"recode":0,"result":[{"organizationid":organizationid}]})
 @app.route('/service/operator/0.1.0/add',methods=['POST'])
 def addoperator():
@@ -109,9 +115,7 @@ def addoperator():
     organizationid=body['organizationid']
 
     operatorid=get_zimu()
-    time.sleep(0.3)
     add_operator_mysql((operatorid,organizationid))
-    time.sleep(0.1)
     return json.dumps({"recode":0,"result":[{"operatorid":operatorid}]})
 
 if __name__=='__main__':

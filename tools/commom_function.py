@@ -1,7 +1,9 @@
 import random
 import subprocess,datetime,os,queue
+import time
 from pathlib import Path
 import sys
+import traceback
 
 root_path=Path(os.path.abspath(__file__)).parent
 project=root_path.parent
@@ -9,11 +11,24 @@ project=root_path.parent
 sys.path.append(str(root_path))
 sys.path.append(str(project))
 from pathlib import Path
-from tools.setting import host
+from tools.setting import host,wait_time
 dir_path=datetime.datetime.now().strftime("%Y%m%d")
 case_path=Path(os.path.abspath(__file__)).parent.parent.parent/Path(dir_path)
 if not Path.exists(case_path):
     Path.mkdir(case_path)
+
+from tools.log import logger
+from tools.locust_config import run_config
+def log_print(func):
+    def wrager(*args,**kwargs):
+        try:
+            r=func(*args,**kwargs)
+            return r
+        except:
+            logger.error(traceback.format_exc())
+            return None
+    return wrager
+@log_print
 def run_case(casename,runtime):
     """
 
@@ -63,7 +78,7 @@ def get_zimu():
     return ''.join(c)
 
 
-
+@log_print
 def read_csv_to_queue(csv,a:queue.Queue):
     """
     读取csv文件放出队列里
@@ -90,5 +105,34 @@ def queue_get_and_put(a:queue.Queue):
     a.put_nowait(b)
     return b
 
+def wait_run(func):
+    def run(*args,**kwargs):
+        if wait_time==0:
+            r=func(*args,**kwargs)
+            return r
+        else:
+            start=time.time()
+            r=func(*args,**kwargs)
+            limit_time=time.time()-start
+            if limit_time<wait_time:
+                time.sleep(wait_time-limit_time)
+            return r
+
+    return run
+
+def limit_run_times(case,a:queue.Queue):
+    times=run_config[case]['time']
+    if a.qsize()<times:
+        return True
+    else:
+        return False
+
+
+
+
+
 if __name__=="__main__":
-    print(get_zimu())
+    # print(get_zimu())
+    a=queue.Queue()
+    a.put('0')
+    print(limit_run_times("addspace",a))
